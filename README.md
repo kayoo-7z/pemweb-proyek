@@ -67,3 +67,35 @@ Repositori ini berisi kode sumber untuk tugas **Proyek Individu 3 - Pemrograman 
    ```bash
    git clone [https://github.com/kayoo-7z/pemweb-proyek.git](https://github.com/kayoo-7z/pemweb-proyek.git)
    ```
+## Dokumentasi Endpoint — Dashboard Stok Obat
+
+| Item | Keterangan |
+| --- | --- |
+| Nama endpoint | Daftar stok obat |
+| Method | GET |
+| URL | `./data/obat.json` (API mock lokal, disajikan via Laragon) |
+| Fungsi | Mengambil seluruh data stok obat untuk dashboard |
+| Query/Body | Tidak ada. Pencarian dan filter dilakukan di sisi client |
+| Header request | `Accept: application/json` |
+| Dipakai di | `js/api.js` → `ambilDataObat()` |
+
+**Contoh response 200 OK:**
+
+```json
+[
+  { "id": 1, "nama": "Paracetamol 500mg", "kategori": "Obat Bebas",
+    "harga": 5000, "stok": 50, "satuan": "strip", "ketersediaan": true }
+]
+```
+
+**Kemungkinan error:**
+
+| Kondisi | Status/Jenis | Perilaku aplikasi |
+| --- | --- | --- |
+| URL salah / file tidak ada | 404 Not Found | Pesan "Data stok tidak ditemukan" + tombol Coba Lagi |
+| Server bermasalah | 500 | Pesan "Server sedang bermasalah" + tombol Coba Lagi |
+| Jaringan terputus | Network error (TypeError) | Pesan "Tidak dapat terhubung ke server" |
+| JSON rusak | SyntaxError | Pesan "Format data tidak dapat dibaca" |
+| Data kosong `[]` | 200 OK | Empty state "Belum ada data obat" |
+
+**Cara menjalankan:** jalankan Laragon, lalu buka `http://localhost/pemweb-obe/` dan lihat bagian Dashboard Stok.

@@ -395,3 +395,366 @@ footer a:hover {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ==========================================
+   10. FORM ANTREAN DOKTER (TUGAS 06)
+   ========================================== */
+#form-antrean {
+  display: flex;             
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+.bantuan {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+#form-antrean input[type="text"],
+#form-antrean input[type="tel"],
+#form-antrean input[type="date"],
+#form-antrean select,
+#form-antrean textarea {
+  flex: none;
+  min-width: 0;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+  background-color: var(--surface-color);
+  color: var(--text-main);
+}
+
+#form-antrean input:focus,
+#form-antrean select:focus,
+#form-antrean textarea:focus {
+  border-color: var(--primary-color);
+}
+
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.cek {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.cek input {
+  margin-top: 0.35rem;
+}
+
+/* State error: border merah + teks + ikon (tidak hanya warna) */
+#form-antrean input[aria-invalid="true"],
+#form-antrean select[aria-invalid="true"],
+#form-antrean textarea[aria-invalid="true"] {
+  border: 2px solid #c53030;
+}
+
+#form-antrean input[type="checkbox"][aria-invalid="true"] {
+  outline: 2px solid #c53030;
+  outline-offset: 2px;
+}
+
+.error {
+  color: #c53030;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.error:not(:empty)::before {
+  content: "⚠ ";
+}
+
+.ringkasan-error {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fff5f5;
+  border: 2px solid #c53030;
+  border-left-width: 6px;
+  border-radius: 8px;
+  color: #742a2a;
+}
+
+.ringkasan-error h4 {
+  color: #9b2c2c;
+}
+
+.ringkasan-error ul {
+  margin-left: 1.2rem;
+}
+
+#form-status {
+  margin-top: 0.8rem;
+  font-weight: 600;
+}
+
+#hasil-pendaftaran dt {
+  font-weight: 700;
+}
+
+#hasil-pendaftaran dd {
+  margin: 0 0 0.4rem 0;
+}
+
+/* ---------- Form di Mode Gelap ---------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+:root[data-theme="dark"] .form-group label {
+  color: var(--text-main);
+}
+
+:root[data-theme="dark"] #form-antrean input,
+:root[data-theme="dark"] #form-antrean select,
+:root[data-theme="dark"] #form-antrean textarea {
+  background-color: #0f1b1c;
+  color: var(--text-main);
+}
+
+:root[data-theme="dark"] .error {
+  color: #feb2b2;
+}
+
+:root[data-theme="dark"] .ringkasan-error {
+  background-color: #3b1f22;
+  border-color: #fc8181;
+  color: #fed7d7;
+}
+
+:root[data-theme="dark"] .ringkasan-error h4 {
+  color: #feb2b2;
+}
+
+/* ==========================================
+   11. DASHBOARD STOK OBAT - REST API (TUGAS 07)
+   ========================================== */
+/* Agar atribut hidden tidak dikalahkan oleh display dari class lain */
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- State: loading / error / kosong ---------- */
+.dash-state {
+  margin-top: 1rem;
+  padding: 1.2rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.dash-loading {
+  background-color: var(--primary-light);
+  border: 1px dashed var(--primary-color);
+  font-weight: 600;
+}
+
+.dash-spinner {
+  display: inline-block;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  border: 3px solid rgba(46, 186, 168, 0.25);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: putar 0.8s linear infinite;
+}
+
+@keyframes putar {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-spinner { animation: none; }
+}
+
+.dash-error {
+  background-color: #fff5f5;
+  border: 2px solid #c53030;
+  border-left-width: 6px;
+  color: #742a2a;
+}
+
+.dash-error p {
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.dash-error p::before {
+  content: "⚠ ";
+}
+
+.dash-kosong {
+  background-color: var(--primary-light);
+  border: 1px solid rgba(46, 186, 168, 0.35);
+  color: var(--text-muted);
+}
+
+/* ---------- Kartu statistik ---------- */
+.dash-statistik {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background-color: var(--primary-light);
+  border-left: 4px solid var(--accent-yellow);
+  border-radius: 8px;
+}
+
+.stat-card strong {
+  font-size: 1.3rem;
+  line-height: 1.3;
+  color: var(--primary-dark);
+}
+
+.stat-card span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Kontrol search/filter ---------- */
+.dash-kontrol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+  align-items: end;
+  margin-top: 1.2rem;
+}
+
+.dash-kontrol input,
+.dash-kontrol select {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+  background-color: var(--surface-color);
+  color: var(--text-main);
+}
+
+.dash-kontrol input:focus,
+.dash-kontrol select:focus {
+  border-color: var(--primary-color);
+}
+
+.dash-kontrol select:focus-visible,
+.dash-kontrol input:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.dash-meta {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Tabel ---------- */
+.tabel-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.tabel-obat {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.tabel-obat th,
+.tabel-obat td {
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tabel-obat th {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.tabel-obat tbody tr:hover {
+  background-color: var(--primary-light);
+}
+
+.tabel-obat tbody tr:last-child td {
+  border-bottom: none;
+}
+
+@media (min-width: 640px) {
+  .dash-kontrol {
+    grid-template-columns: repeat(3, 1fr) auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dash-statistik {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ---------- Dashboard di Mode Gelap ---------- */
+:root[data-theme="dark"] .stat-card strong {
+  color: var(--primary-color);
+}
+
+:root[data-theme="dark"] .dash-kontrol input,
+:root[data-theme="dark"] .dash-kontrol select {
+  background-color: #0f1b1c;
+  color: var(--text-main);
+  border-color: #33484c;
+}
+
+:root[data-theme="dark"] .tabel-wrap,
+:root[data-theme="dark"] .tabel-obat th,
+:root[data-theme="dark"] .tabel-obat td {
+  border-color: #2a3f43;
+}
+
+:root[data-theme="dark"] .tabel-obat th {
+  color: var(--text-main);
+}
+
+:root[data-theme="dark"] .dash-error {
+  background-color: #3b1f22;
+  border-color: #fc8181;
+  color: #fed7d7;
+}

@@ -16,7 +16,8 @@
     <nav>
       <a href="#about">About Us</a>
       <a href="#shop">Shop</a>
-      <a href="#antrean">Antrean Dokter</a>
+      <a href="#daftar-antrean">Daftar Antrean Dokter Sekarang</a>
+      <a href="#dashboard">Dashboard Stok</a>
       <button id="theme-button" type="button">🌙 Mode Gelap</button>
     </nav>
   </header>
@@ -86,6 +87,148 @@
         <a href="#">Daftar Antrean Dokter Sekarang</a>
       </article>
     </section>
+
+    <!-- FORM PENDAFTARAN ANTREAN DOKTER (TUGAS 06) -->
+<section id="daftar-antrean">
+  <h3>📝 Form Pendaftaran Antrean Dokter</h3>
+  <p>Kolom bertanda <span aria-hidden="true">*</span> wajib diisi.</p>
+
+  <div id="ringkasan-error" class="ringkasan-error" role="alert" hidden>
+    <h4>Terdapat <span id="jumlah-error"></span> isian yang perlu diperbaiki:</h4>
+    <ul id="daftar-error"></ul>
+  </div>
+
+  <form id="form-antrean" novalidate>
+    <div class="form-group">
+      <label for="nama">Nama lengkap <span aria-hidden="true">*</span></label>
+      <input type="text" id="nama" name="nama" required minlength="3" maxlength="60"
+             autocomplete="name" aria-describedby="bantuan-nama error-nama">
+      <small id="bantuan-nama" class="bantuan">Minimal 3 huruf, sesuai identitas.</small>
+      <small id="error-nama" class="error"></small>
+    </div>
+
+    <div class="form-group">
+      <label for="wa">Nomor WhatsApp <span aria-hidden="true">*</span></label>
+      <input type="tel" id="wa" name="wa" required maxlength="18" inputmode="tel"
+             autocomplete="tel" placeholder="0852-xxxx-xxxx"
+             aria-describedby="bantuan-wa error-wa">
+      <small id="bantuan-wa" class="bantuan">Contoh: 081234567890. Dipakai untuk notifikasi antrean.</small>
+      <small id="error-wa" class="error"></small>
+    </div>
+
+    <div class="form-group">
+      <label for="layanan">Layanan <span aria-hidden="true">*</span></label>
+      <select id="layanan" name="layanan" required aria-describedby="error-layanan">
+        <option value="">-- Pilih layanan --</option>
+        <option value="Konsultasi Dokter">Konsultasi Dokter</option>
+        <option value="Pemeriksaan GCU">Pemeriksaan GCU</option>
+        <option value="Tebus Resep Dokter">Tebus Resep Dokter</option>
+      </select>
+      <small id="error-layanan" class="error"></small>
+    </div>
+
+    <div class="form-group">
+      <label for="tanggal">Tanggal kunjungan <span aria-hidden="true">*</span></label>
+      <input type="date" id="tanggal" name="tanggal" required
+             aria-describedby="bantuan-tanggal error-tanggal">
+      <small id="bantuan-tanggal" class="bantuan">Mulai hari ini sampai 30 hari ke depan.</small>
+      <small id="error-tanggal" class="error"></small>
+    </div>
+
+    <div class="form-group">
+      <label for="keluhan">Keluhan singkat (opsional)</label>
+      <textarea id="keluhan" name="keluhan" rows="3" maxlength="200"
+                aria-describedby="bantuan-keluhan error-keluhan"></textarea>
+      <small id="bantuan-keluhan" class="bantuan">Maksimal 200 karakter.</small>
+      <small id="error-keluhan" class="error"></small>
+    </div>
+
+    <div class="form-group">
+      <div class="cek">
+        <input type="checkbox" id="setuju" name="setuju" required aria-describedby="error-setuju">
+        <label for="setuju">Saya menyetujui data ini digunakan untuk pendaftaran antrean. <span aria-hidden="true">*</span></label>
+      </div>
+      <small id="error-setuju" class="error"></small>
+    </div>
+
+    <button type="submit">Daftar Antrean</button>
+  </form>
+
+  <p id="form-status" role="status"></p>
+  <div id="hasil-pendaftaran" aria-live="polite"></div>
+</section>
+<!-- DASHBOARD STOK OBAT DARI REST API (TUGAS 07) -->
+<section id="dashboard" aria-labelledby="judul-dashboard">
+  <h3 id="judul-dashboard">📊 Dashboard Stok Obat</h3>
+  <p>Data stok dimuat dari API (<code>GET data/obat.json</code>) menggunakan Fetch, JSON, dan async/await.</p>
+
+  <!-- STATE: LOADING -->
+  <div id="dash-loading" class="dash-state dash-loading" role="status" hidden>
+    <span class="dash-spinner" aria-hidden="true"></span>
+    <span>Memuat data stok obat...</span>
+  </div>
+
+  <!-- STATE: ERROR -->
+  <div id="dash-error" class="dash-state dash-error" role="alert" hidden>
+    <p id="dash-error-pesan"></p>
+    <button type="button" id="dash-retry">🔄 Coba Lagi</button>
+  </div>
+
+  <!-- STATE: EMPTY (API mengembalikan data kosong) -->
+  <div id="dash-empty" class="dash-state dash-kosong" role="status" hidden>
+    <p>Belum ada data obat yang tersedia dari server.</p>
+  </div>
+
+  <!-- STATE: SUCCESS -->
+  <div id="dash-konten" hidden>
+    <div id="dash-statistik" class="dash-statistik"></div>
+
+    <div class="dash-kontrol" role="search" aria-label="Filter dashboard stok">
+      <div class="form-group">
+        <label for="dash-cari">Cari nama obat</label>
+        <input type="search" id="dash-cari" placeholder="Contoh: paracetamol" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="dash-kategori">Kategori</label>
+        <select id="dash-kategori"></select>
+      </div>
+      <div class="form-group">
+        <label for="dash-status">Status stok</label>
+        <select id="dash-status">
+          <option value="semua">Semua</option>
+          <option value="tersedia">Tersedia</option>
+          <option value="habis">Stok habis</option>
+        </select>
+      </div>
+      <button type="button" id="dash-muat-ulang" class="btn-filter">↻ Muat Ulang</button>
+    </div>
+
+    <p id="dash-info" class="dash-meta" role="status"></p>
+
+    <div id="dash-tabel-wrap" class="tabel-wrap">
+      <table class="tabel-obat">
+        <caption class="sr-only">Daftar stok obat Apotek Bina Farma</caption>
+        <thead>
+          <tr>
+            <th scope="col">Nama Obat</th>
+            <th scope="col">Kategori</th>
+            <th scope="col">Harga</th>
+            <th scope="col">Stok</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody id="dash-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- EMPTY karena pencarian/filter tidak cocok -->
+    <p id="dash-tidak-ada" class="dash-state dash-kosong" role="status" hidden>
+      Tidak ada obat yang cocok dengan pencarian atau filter Anda.
+    </p>
+
+    <p id="dash-diperbarui" class="dash-meta"></p>
+  </div>
+</section>
   </main>
 
     <hr />

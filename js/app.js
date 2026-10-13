@@ -6,6 +6,9 @@ import {
   formatRingkasanObat 
 } from './utils.js';
 import { cariBerdasarkanNama, cariObatById } from './utils.js';
+import { bacaDataAntrean, validasiAntrean, tanggalLokal } from './utils.js';
+import { ambilDataObat, pesanErrorRamah, ENDPOINT_OBAT } from './api.js';
+import { hitungStatistikObat, filterDashboard, formatRupiah } from './utils.js';
 // Data Inventaris Obat Apotek Bina Farma
 const inventarisApotek = [
   { id: 1, nama: 'Paracetamol 500mg', kategori: 'Obat Bebas', harga: 5000, stok: 50, ketersediaan: true },
@@ -208,6 +211,250 @@ themeButton.addEventListener('click', () => {
   }
 });
 
+// ==========================================
+// TUGAS 06 OBE: FORM AKSESIBEL & VALIDASI
+// ==========================================
+const formAntrean = document.querySelector('#form-antrean');
+const ringkasanError = document.querySelector('#ringkasan-error');
+const jumlahError = document.querySelector('#jumlah-error');
+const daftarError = document.querySelector('#daftar-error');
+const statusForm = document.querySelector('#form-status');
+const hasilDaftar = document.querySelector('#hasil-pendaftaran');
+
+// Batas tanggal di date picker (HTML constraint, diisi dinamis)
+formAntrean.elements.tanggal.min = tanggalLokal();
+formAntrean.elements.tanggal.max = tanggalLokal(30);
+
+function bersihkanError() {
+  formAntrean.querySelectorAll('.error').forEach((el) => { el.textContent = ''; });
+  formAntrean.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+  daftarError.replaceChildren();
+  ringkasanError.hidden = true;
+  statusForm.textContent = '';
+  hasilDaftar.replaceChildren();
+}
+
+function tampilkanError(errors) {
+  const daftar = Object.entries(errors);
+
+  for (const [field, pesan] of daftar) {
+    document.querySelector(`#error-${field}`).textContent = pesan;
+    formAntrean.elements[field].setAttribute('aria-invalid', 'true');
+
+    const item = document.createElement('li');
+    item.textContent = pesan;
+    daftarError.append(item);
+  }
+
+  jumlahError.textContent = daftar.length;
+  ringkasanError.hidden = false;
+  statusForm.textContent = 'Periksa kembali data yang belum valid.';
+  formAntrean.elements[daftar[0][0]].focus(); // fokus ke error pertama
+}
+
+function tampilkanPreview(data) {
+  const panel = document.createElement('div');
+  panel.className = 'panel-detail';
+
+  const judul = document.createElement('h4');
+  judul.textContent = 'Data valid — preview pendaftaran';
+
+  const dl = document.createElement('dl');
+  const baris = [
+    ['Nama', data.nama],
+    ['WhatsApp', data.wa],
+    ['Layanan', data.layanan],
+    ['Tanggal kunjungan', data.tanggal],
+    ['Keluhan', data.keluhan || '-']
+  ];
+  for (const [label, nilai] of baris) {
+    const dt = document.createElement('dt');
+    dt.textContent = label;
+    const dd = document.createElement('dd');
+    dd.textContent = nilai;
+    dl.append(dt, dd);
+  }
+
+  const catatan = document.createElement('p');
+  catatan.textContent = 'Data belum dikirim ke server. Validasi server akan ditambahkan pada modul backend.';
+
+  panel.append(judul, dl, catatan);
+  hasilDaftar.append(panel);
+}
+
+formAntrean.addEventListener('submit', (event) => {
+  event.preventDefault();
+  bersihkanError();
+
+  const data = bacaDataAntrean(formAntrean);
+  const errors = validasiAntrean(data);
+
+  if (Object.keys(errors).length > 0) {
+    tampilkanError(errors);
+    return; // jangan lanjut kalau masih ada error
+  }
+
+  statusForm.textContent = 'Data valid dan siap dikirim.';
+  tampilkanPreview(data);
+});
+
 // --- Inisialisasi ---
 terapkanTema(bacaTema());
 perbaruiDaftar();
+
+// ==========================================
+// TUGAS 07 OBE: REST API / MINI DASHBOARD
+// ==========================================
+const dashLoading = document.querySelector('#dash-loading');
+const dashError = document.querySelector('#dash-error');
+const dashErrorPesan = document.querySelector('#dash-error-pesan');
+const dashRetry = document.querySelector('#dash-retry');
+const dashEmpty = document.querySelector('#dash-empty');
+const dashKonten = document.querySelector('#dash-konten');
+const dashStatistik = document.querySelector('#dash-statistik');
+const dashCari = document.querySelector('#dash-cari');
+const dashKategori = document.querySelector('#dash-kategori');
+const dashStatus = document.querySelector('#dash-status');
+const dashMuatUlang = document.querySelector('#dash-muat-ulang');
+const dashInfo = document.querySelector('#dash-info');
+const dashTabelWrap = document.querySelector('#dash-tabel-wrap');
+const dashTbody = document.querySelector('#dash-tbody');
+const dashTidakAda = document.querySelector('#dash-tidak-ada');
+const dashDiperbarui = document.querySelector('#dash-diperbarui');
+
+// Data asli disimpan sekali; filter bekerja di data ini tanpa request ulang
+const dashState = { data: [], keyword: '', status: 'semua', kategori: 'semua' };
+
+// Hanya satu state yang tampil dalam satu waktu
+function aturTampilan(keadaan) {
+  dashLoading.hidden = keadaan !== 'loading';
+  dashError.hidden = keadaan !== 'error';
+  dashEmpty.hidden = keadaan !== 'empty';
+  dashKonten.hidden = keadaan !== 'success';
+}
+
+// --- Render aman (createElement + textContent, tanpa innerHTML) ---
+function buatKartuStat(label, nilai) {
+  const kartu = document.createElement('div');
+  kartu.className = 'stat-card';
+
+  const angka = document.createElement('strong');
+  angka.textContent = String(nilai);
+
+  const teks = document.createElement('span');
+  teks.textContent = label;
+
+  kartu.append(angka, teks);
+  return kartu;
+}
+
+function renderStatistik(data) {
+  const s = hitungStatistikObat(data);
+  dashStatistik.replaceChildren(
+    buatKartuStat('Jenis obat', s.total),
+    buatKartuStat('Obat tersedia', s.tersedia),
+    buatKartuStat('Stok habis', s.habis),
+    buatKartuStat('Total nilai stok', formatRupiah(s.nilaiStok))
+  );
+}
+
+function isiOpsiKategori(data) {
+  const kategoriUnik = [...new Set(data.map((o) => o.kategori))].sort();
+  dashKategori.replaceChildren(
+    new Option('Semua kategori', 'semua'),
+    ...kategoriUnik.map((k) => new Option(k, k))
+  );
+}
+
+function buatSel(teks) {
+  const td = document.createElement('td');
+  td.textContent = teks;
+  return td;
+}
+
+function renderTabel(items) {
+  dashTbody.replaceChildren();
+
+  for (const obat of items) {
+    const baris = document.createElement('tr');
+
+    const tdStatus = document.createElement('td');
+    const badge = document.createElement('span');
+    badge.className = `badge-stok ${obat.ketersediaan ? 'ada' : 'habis'}`;
+    badge.textContent = obat.ketersediaan ? 'Tersedia' : 'Stok Habis';
+    tdStatus.append(badge);
+
+    baris.append(
+      buatSel(obat.nama),
+      buatSel(obat.kategori),
+      buatSel(formatRupiah(obat.harga)),
+      buatSel(`${obat.stok} ${obat.satuan ?? 'unit'}`),
+      tdStatus
+    );
+    dashTbody.append(baris);
+  }
+}
+
+function renderDashboard() {
+  const hasil = filterDashboard(dashState.data, dashState);
+  renderTabel(hasil);
+  dashTabelWrap.hidden = hasil.length === 0;
+  dashTidakAda.hidden = hasil.length > 0;
+  dashInfo.textContent = `Menampilkan ${hasil.length} dari ${dashState.data.length} obat`;
+}
+
+// --- Fungsi utama: fetch + async/await + try/catch ---
+async function muatDashboard() {
+  aturTampilan('loading');
+
+  try {
+    const data = await ambilDataObat();
+    dashState.data = data;
+
+    if (data.length === 0) {
+      aturTampilan('empty');
+      return;
+    }
+
+    // reset filter setiap data baru dimuat
+    dashState.keyword = '';
+    dashState.status = 'semua';
+    dashState.kategori = 'semua';
+    dashCari.value = '';
+    dashStatus.value = 'semua';
+
+    isiOpsiKategori(data);
+    renderStatistik(data);
+    renderDashboard();
+    dashDiperbarui.textContent =
+      `Terakhir dimuat: ${new Date().toLocaleTimeString('id-ID')} • Sumber: ${ENDPOINT_OBAT}`;
+
+    aturTampilan('success');
+  } catch (error) {
+    console.error('Gagal memuat dashboard:', error); // detail teknis hanya di Console
+    dashErrorPesan.textContent = pesanErrorRamah(error); // pengguna melihat pesan ramah
+    aturTampilan('error');
+  }
+}
+
+// --- Event ---
+dashCari.addEventListener('input', () => {
+  dashState.keyword = dashCari.value;
+  renderDashboard();
+});
+
+dashKategori.addEventListener('change', () => {
+  dashState.kategori = dashKategori.value;
+  renderDashboard();
+});
+
+dashStatus.addEventListener('change', () => {
+  dashState.status = dashStatus.value;
+  renderDashboard();
+});
+
+dashRetry.addEventListener('click', muatDashboard);
+dashMuatUlang.addEventListener('click', muatDashboard);
+
+// --- Inisialisasi ---
+muatDashboard();
