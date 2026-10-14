@@ -1,0 +1,5 @@
+Skenario Pengujian Sistem Apotek Bina Farma:
+1. Test Case 01: Pelanggan mencari obat di katalog -> Berhasil menampilkan data obat dari obat.json.
+2. Test Case 02: Pelanggan melakukan checkout pesanan obat resep dengan unggah foto -> Masuk ke status MENUNGGU_VERIFIKASI.
+3. Test Case 03: Apoteker memverifikasi resep digital -> Status berubah menjadi VALID / DIPROSES.
+4. Test Case 04: Pelanggan melakukan pembayaran online -> Status pembayaran BERHASIL.
