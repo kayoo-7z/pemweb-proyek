@@ -1,0 +1,17 @@
+{
+    "name": "binafarma/api",
+    "description": "REST API Apotek Bina Farma",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "vlucas/phpdotenv": "^5.8"
+    },
+    "autoload": {
+        "files": [
+            "src/helpers.php",
+            "src/data.php",
+            "src/handlers.php"
+        ]
+    }
+}

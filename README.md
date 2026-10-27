@@ -100,3 +100,75 @@ modul 7
 | Data kosong `[]` | 200 OK | Empty state "Belum ada data obat" |
 
 **Cara menjalankan:** jalankan Laragon, lalu buka `http://localhost/pemweb-obe/` dan lihat bagian Dashboard Stok.
+
+## Backend REST API (PHP 8.4)
+
+**Kebutuhan:** Laragon 5 (Apache + PHP 8.4), Composer.
+
+**Cara menjalankan**
+1. Jalankan Laragon → *Start All*.
+2. Di Terminal Laragon: `cd api` lalu `composer install`.
+3. Salin `api/.env.example` menjadi `api/.env`, lalu sesuaikan isinya.
+4. Buka `http://localhost/pemweb-proyek-main/api/health`.
+
+**Konfigurasi `.env`** (hanya `.env.example` yang di-commit)
+
+| Key | Fungsi |
+| --- | --- |
+| APP_NAME | nama aplikasi pada response health |
+| APP_ENV | lingkungan (local/staging/production) |
+| APP_DEBUG | `true` menampilkan detail error dan versi PHP (hanya lokal) |
+| APP_URL | alamat dasar API |
+| APP_TIMEZONE | zona waktu (Asia/Makassar) |
+| DB_* | disiapkan untuk Modul 10, belum dipakai |
+
+**Format response**
+
+```json
+{ "success": true,  "message": "...", "data": {} }
+{ "success": false, "message": "...", "errors": {} }
+```
+
+**Daftar endpoint** (Base URL: `http://localhost/pemweb-proyek-main/api`)
+
+| Method | Path | Fungsi | Status |
+| --- | --- | --- | --- |
+| GET | `/health` | cek API berjalan | 200 |
+| GET | `/obat` | daftar obat. Query: `kategori`, `status` (tersedia/habis), `q` (nama) | 200 |
+| GET | `/obat/{id}` | detail obat | 200, 404 |
+| POST | `/obat` | tambah obat (body JSON, belum disimpan) | 201, 400, 415, 422 |
+| lainnya | endpoint di atas | method tidak didukung | 405 + header `Allow` |
+| apa pun | path tidak dikenal | route tidak ada | 404 |
+
+**Contoh `GET /obat?kategori=Obat%20Bebas` → 200**
+
+```json
+{
+  "success": true,
+  "message": "Daftar obat berhasil diambil.",
+  "count": 3,
+  "data": [
+    { "id": 1, "nama": "Paracetamol 500mg", "kategori": "Obat Bebas",
+      "harga": 5000, "stok": 50, "satuan": "strip", "ketersediaan": true }
+  ]
+}
+```
+
+**Contoh `POST /obat`** (header `Content-Type: application/json`)
+
+```json
+{ "nama": "Bodrex Flu", "kategori": "Obat Bebas", "harga": 3500, "stok": 40, "satuan": "strip" }
+```
+
+| Kondisi | Status | Pesan |
+| --- | --- | --- |
+| Data valid | 201 | Data obat diterima (belum disimpan ke database). |
+| JSON rusak / bukan object | 400 | Format JSON tidak valid. |
+| Content-Type bukan JSON | 415 | Content-Type harus application/json. |
+| Gagal aturan bisnis | 422 | `errors` berisi pesan per field |
+
+**Aturan validasi POST /obat:** nama wajib 3–100 karakter; kategori salah satu dari Obat Bebas, Resep Dokter, Skincare, Susu & Makanan, Alat Kesehatan; harga dan stok wajib bilangan bulat ≥ 0; satuan opsional maksimal 20 karakter.
+
+**Middleware:** `middlewareRequireJson()` dijalankan router setelah route cocok dan sebelum handler untuk method POST/PUT/PATCH.
+
+> Data masih dummy di `api/src/data.php`. Penyimpanan ke database dikerjakan pada Modul 10.

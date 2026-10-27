@@ -1,0 +1,42 @@
+### No 2: GET BASE/health
+GET http://localhost/pemweb-proyek-main/api/health
+
+### No 3: GET BASE/obat
+GET http://localhost/pemweb-proyek-main/api/obat
+
+### No 4: GET BASE/obat?kategori=Obat%20Bebas
+GET http://localhost/pemweb-proyek-main/api/obat?kategori=Obat%20Bebas
+
+### No 5: GET BASE/tidakada
+GET http://localhost/pemweb-proyek-main/api/tidakada
+
+### No 6: POST BASE/obat (Isi A - Valid 201)
+POST http://localhost/pemweb-proyek-main/api/obat
+Content-Type: application/json
+
+{
+  "nama": "Bodrex Flu",
+  "kategori": "Obat Bebas",
+  "harga": 3500,
+  "stok": 40,
+  "satuan": "strip"
+}
+
+### No 7: POST BASE/obat (Isi B - JSON Rusak 400)
+POST http://localhost/pemweb-proyek-main/api/obat
+Content-Type: application/json
+
+{ "nama": "Bodrex Flu", "harga": 3500,
+
+### No 8: POST BASE/obat (Isi C - Validasi Gagal 422)
+POST http://localhost/pemweb-proyek-main/api/obat
+Content-Type: application/json
+
+{
+  "nama": "Al",
+  "kategori": "Permen",
+  "harga": -5
+}
+
+### No 9: DELETE BASE/obat (Method Not Allowed 405)
+DELETE http://localhost/pemweb-proyek-main/api/obat
