@@ -8,9 +8,11 @@
         "vlucas/phpdotenv": "^5.8"
     },
     "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        },
         "files": [
             "src/helpers.php",
-            "src/data.php",
             "src/handlers.php"
         ]
     }

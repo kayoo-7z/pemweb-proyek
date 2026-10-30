@@ -172,3 +172,56 @@ modul 7
 **Middleware:** `middlewareRequireJson()` dijalankan router setelah route cocok dan sebelum handler untuk method POST/PUT/PATCH.
 
 > Data masih dummy di `api/src/data.php`. Penyimpanan ke database dikerjakan pada Modul 10.
+
+## Database (Modul 10)
+
+**Database:** MySQL/MariaDB via Laragon, nama `binafarma_db`, 4 tabel: `kategori`, `obat`, `layanan`, `antrean`.
+ERD dan data dictionary lengkap: [uml/erd.md](uml/erd.md).
+
+**Setup database**
+1. Laragon → *Start All* (Apache dan MySQL).
+2. Terminal Laragon, dari folder root proyek:
+   ```
+   mysql -u root -e "source C:/laragon/www/pemweb-proyek-main/api/database/schema.sql"
+   mysql -u root -e "source C:/laragon/www/pemweb-proyek-main/api/database/seed.sql"
+   ```
+3. Salin `api/.env.example` menjadi `api/.env`, lalu sesuaikan `DB_*` (jangan commit `.env`).
+4. `cd api` lalu `composer install`.
+
+**Arsitektur data**
+
+| Lapisan | File | Tugas |
+| --- | --- | --- |
+| Route | `api/routes/api.php` | memetakan method + path ke handler |
+| Handler (HTTP) | `api/src/handlers.php` | validasi request, response JSON |
+| Repository (akses data) | `api/src/Repositories/*.php` | semua query SQL (prepared statement) |
+| Koneksi | `api/src/Database.php` | satu koneksi PDO dari `.env` |
+
+**Keamanan database**
+- Kredensial hanya di `.env` (tidak di-commit); `.env.example` tanpa secret.
+- PDO: `ERRMODE_EXCEPTION`, `EMULATE_PREPARES = false`, charset `utf8mb4`.
+- Semua nilai dari pengguna dikirim sebagai parameter (`:kategori`, `:q`, `:id`, `:tanggal`), tidak digabung ke string SQL.
+- Error database tidak dibocorkan ke client (response 500 berisi pesan umum).
+- Data pribadi pasien (tabel `antrean`) tidak diekspos; endpoint hanya memberi ringkasan agregat.
+
+**Endpoint tambahan**
+
+| Method | Path | Fungsi | Status |
+| --- | --- | --- | --- |
+| GET | `/kategori` | daftar kategori + jumlah obat | 200 |
+| GET | `/obat` | daftar obat dari database. Query: `kategori`, `status`, `q` | 200 |
+| GET | `/obat/{id}` | detail obat | 200, 404 |
+| GET | `/antrean/ringkasan` | ringkasan antrean per layanan. Query: `tanggal` (YYYY-MM-DD, default hari ini) | 200, 400 |
+| POST | `/obat` | validasi data obat (belum disimpan; CRUD di Modul 11) | 201, 400, 415, 422 |
+
+**Query terparameterisasi vs concatenation**
+
+```php
+// TIDAK AMAN: input menjadi bagian sintaks SQL
+$sql = "SELECT * FROM obat WHERE nama LIKE '%" . $_GET['q'] . "%'";
+// q = ' OR '1'='1  ->  kondisi selalu benar, seluruh data terbaca (SQL injection)
+
+// AMAN: struktur SQL dan nilai dikirim terpisah
+$stmt = $pdo->prepare('SELECT * FROM obat WHERE nama LIKE :q');
+$stmt->execute(['q' => '%' . $q . '%']);   // q hanya diperlakukan sebagai data
+```

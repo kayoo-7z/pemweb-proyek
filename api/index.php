@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Dotenv\Dotenv;
 
-// 1. Pastikan dependency Composer sudah terpasang
+// Pastikan dependency Composer sudah terpasang
 $autoload = __DIR__ . '/vendor/autoload.php';
 if (!is_file($autoload)) {
     http_response_code(500);
@@ -32,6 +32,17 @@ set_exception_handler(function (Throwable $e): void {
     jsonError(500, 'Terjadi kesalahan pada server.', isDebug() ? ['debug' => $e->getMessage()] : []);
 });
 
-// 5. Routing
+// 5. Routing dengan pembersihan path untuk Apache/Laragon
 $routes = require __DIR__ . '/routes/api.php';
-dispatch($routes, requestMethod(), requestPath());
+
+$path = requestPath();
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? ''; 
+$dirName = dirname($scriptName); 
+
+// Hapus prefix folder /pemweb-proyek-main/api atau /index.php dari jalur URI
+$path = str_replace([$scriptName, $dirName], '', $path);
+if ($path === '' || $path === false) {
+    $path = '/';
+}
+
+dispatch($routes, requestMethod(), $path);

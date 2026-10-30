@@ -1,7 +1,7 @@
 RewriteEngine On
 
 # 1. Blokir akses langsung ke file/folder sensitif
-RewriteRule ^(\.env|composer\.|vendor/|src/|routes/) - [NC,F,L]
+RewriteRule ^(\.env|composer\.|vendor/|src/|routes/|database/) - [NC,F,L]
 
 # 2. Request yang bukan file/folder asli diarahkan ke front controller
 RewriteCond %{REQUEST_FILENAME} !-f
