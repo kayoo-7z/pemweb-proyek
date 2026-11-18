@@ -2,253 +2,343 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Apotek Bina Farma</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Apotek Bina Farma Tarakan: katalog obat dan produk kesehatan, jadwal dokter, dan antrean online.">
+  <title>Apotek Bina Farma | Kota Tarakan</title>
+  <link rel="icon" type="image/jpeg" href="logo%20binafarma.jpeg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="style/style.css">
 </head>
-<body>
+<body id="top">
 
-  <!-- HEADER / NAVBAR -->
-  <header>
-    <img src="logo binafarma.jpeg" alt="Logo Apotek Bina Farma" width="60">
-    <h1>Apotek Bina Farma</h1>
-    <p>Mitra Layanan Kesehatan Anda</p>
-    
-    <nav>
-      <a href="#about">About Us</a>
-      <a href="#shop">Shop</a>
-      <a href="#daftar-antrean">Daftar Antrean Dokter Sekarang</a>
-      <a href="#dashboard">Dashboard Stok</a>
-      <button id="theme-button" type="button">🌙 Mode Gelap</button>
-    </nav>
+  <!-- Kumpulan ikon (dipakai lewat <use href="#i-nama">) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><line x1="13" y1="5" x2="13" y2="7"/><line x1="13" y1="17" x2="13" y2="19"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#katalog">Lewati ke konten utama</a>
+
+  <!-- ================= HEADER ================= -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Apotek Bina Farma, kembali ke atas">
+        <span class="brand-mark" aria-hidden="true"><svg class="icon"><use href="#i-plus"/></svg></span>
+        <span class="brand-text">
+          <span class="brand-name">Apotek Bina Farma</span>
+          <span class="brand-sub">Kota Tarakan</span>
+        </span>
+      </a>
+
+      <nav class="site-nav" aria-label="Navigasi utama">
+        <a href="#katalog" class="is-active">Katalog Produk</a>
+        <a href="#antrean">Antrean Dokter</a>
+        <a href="#kontak">Kontak</a>
+      </nav>
+
+      <button type="button" class="cart-button" id="cart-button" aria-label="Keranjang, 0 item">
+        <svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg>
+        <span class="cart-count" id="cart-count" hidden>0</span>
+      </button>
+    </div>
   </header>
 
-    <hr />
-
   <main>
-    <!-- HERO BANNER -->
-    <section id="about">
-      <mark>Buka 24 Jam</mark>
-      <h2>Apotek Bina Farma Tarakan</h2>
-      <p>Mitra layanan kesehatan terpercaya Anda di Kota Tarakan. Siap melayani kebutuhan obat, resep dokter, hingga konsultasi kesehatan secara cepat dan profesional.</p>
+    <!-- ================= HERO ================= -->
+    <section class="hero" aria-labelledby="judul-hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow eyebrow-icon"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg>Apotek lokal di Kota Tarakan</p>
+          <h1 id="judul-hero">Sehat lebih mudah, dekat dengan Anda.</h1>
+          <p class="lead">Temukan kebutuhan kesehatan, cek stok obat, dan pantau antrean dokter dalam satu tempat.</p>
+
+          <form class="search-form" id="search-form" role="search">
+            <svg class="icon search-icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <label for="cari-produk" class="sr-only">Cari obat atau produk kesehatan</label>
+            <input type="search" id="cari-produk" placeholder="Cari obat atau produk kesehatan" autocomplete="off">
+            <button type="submit" class="btn">Cari</button>
+          </form>
+
+          <p class="hint">Sering dicari:
+            <button type="button" class="chip" data-cari="Paracetamol">Paracetamol</button>
+            <button type="button" class="chip" data-cari="Vitamin C">Vitamin C</button>
+            <button type="button" class="chip" data-cari="Plester">Plester</button>
+          </p>
+        </div>
+
+        <aside class="hero-card" aria-labelledby="judul-layanan">
+          <span class="badge badge-yellow">Buka 24 Jam</span>
+          <h2 id="judul-layanan">Layanan kami</h2>
+          <ul class="service-list">
+            <li>Pembelian obat resep dan non-resep</li>
+            <li>Pemeriksaan GCU (gula darah, kolesterol, asam urat)</li>
+            <li>Pengantaran obat via Grab, Gojek, dan Maxim</li>
+          </ul>
+          <p class="hero-card-alamat"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>Jl. Aditiyawarman RT.09 No. 01, Kel. Karang Balik, Tarakan</span></p>
+        </aside>
+      </div>
     </section>
 
-      <hr />
+    <!-- ================= KATALOG PRODUK ================= -->
+    <section class="section" id="katalog" aria-labelledby="judul-katalog">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Katalog produk</p>
+            <h2 id="judul-katalog">Kebutuhan sehat Anda</h2>
+            <p class="section-desc">Jelajahi obat dan produk perawatan untuk keluarga.</p>
+          </div>
+        </div>
 
-    <!-- LOKASI & LAYANAN APOTEK -->
-    <section>
-      <h3>📍 Lokasi & Layanan Apotek</h3>
-      <ul>
-        <li><strong>Alamat:</strong> Jl. Aditiyawarman RT.09 No. 01 Kel. Karang Balik, Tarakan</li>
-        <li><strong>Kami Melayani:</strong> Pembelian Resep & Non-Resep, Pemeriksaan GCU, serta Pengantaran Obat (Grab/Gojek/Maxim).</li>
-      </ul>
-      <a href="https://maps.google.com" target="_blank">[ Google Maps ]</a>
+        <!-- State: loading / error / kosong -->
+        <div id="katalog-loading" class="state-box" role="status" hidden>
+          <span class="spinner" aria-hidden="true"></span><span>Memuat katalog produk...</span>
+        </div>
+        <div id="katalog-error" class="state-box state-error" role="alert" hidden>
+          <p id="katalog-error-pesan"></p>
+          <button type="button" class="btn" id="katalog-retry">Coba Lagi</button>
+        </div>
+        <div id="katalog-kosong" class="state-box" role="status" hidden>
+          <p>Belum ada produk yang tersedia.</p>
+        </div>
+
+        <!-- State: berhasil -->
+        <div id="katalog-konten" hidden>
+          <div class="pill-group" role="group" aria-label="Filter kategori produk">
+            <button type="button" class="pill is-active" data-kategori="semua" aria-pressed="true">Semua produk</button>
+            <button type="button" class="pill" data-kategori="Obat Bebas" aria-pressed="false">Obat Bebas</button>
+            <button type="button" class="pill" data-kategori="Resep Dokter" aria-pressed="false">Resep Dokter</button>
+            <button type="button" class="pill" data-kategori="Skincare" aria-pressed="false">Skincare</button>
+            <button type="button" class="pill" data-kategori="Susu & Makanan" aria-pressed="false">Susu &amp; Makanan</button>
+            <button type="button" class="pill" data-kategori="Alat Kesehatan" aria-pressed="false">Alat Kesehatan</button>
+          </div>
+
+          <p class="muted" id="katalog-info" role="status"></p>
+          <div class="product-grid" id="katalog-grid"></div>
+          <p class="state-box" id="katalog-tidak-ada" role="status" hidden>Produk tidak ditemukan. Coba kata kunci atau kategori lain.</p>
+
+          <p class="note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>Harga dan stok merupakan data contoh. Obat resep hanya dapat dibeli dengan resep dokter yang valid.</span></p>
+        </div>
+      </div>
     </section>
 
-      <hr />
+    <!-- ================= JADWAL & ANTREAN ================= -->
+    <section class="section section-alt" id="antrean" aria-labelledby="judul-antrean">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Jadwal &amp; antrean</p>
+            <h2 id="judul-antrean">Rencanakan kunjungan Anda</h2>
+            <p class="section-desc">Lihat jadwal praktik dan nomor antrean sebelum datang.</p>
+          </div>
+          <span class="badge badge-yellow">Simulasi layanan</span>
+        </div>
 
-    <!-- SHOP / CARI OBAT -->
-    <section id="shop">
-      <h3>🛒 Shop & Cari Obat</h3>
-      <form>
-        <input type="text" id="cari-obat" aria-label="Cari obat" placeholder="Cari nama obat, vitamin...">
-        <button type="submit">📄 Unggah Resep Dokter</button>
-      </form>
+        <div class="antrean-grid">
+          <article class="panel" aria-labelledby="judul-jadwal">
+            <h3 class="panel-title" id="judul-jadwal"><svg class="icon" aria-hidden="true"><use href="#i-calendar"/></svg>Jadwal dokter</h3>
+            <ul class="doctor-list">
+              <li class="doctor">
+                <span class="avatar" aria-hidden="true">NP</span>
+                <div>
+                  <p class="doctor-name">dr. Nadia Pratama</p>
+                  <p class="muted">Dokter umum</p>
+                  <p>Senin – Jumat · 16.00 – 20.00</p>
+                </div>
+              </li>
+              <li class="doctor">
+                <span class="avatar" aria-hidden="true">AH</span>
+                <div>
+                  <p class="doctor-name">dr. Arif Hidayat</p>
+                  <p class="muted">Dokter umum</p>
+                  <p>Sabtu · 09.00 – 12.00</p>
+                </div>
+              </li>
+            </ul>
+            <p class="panel-note">Jadwal dapat berubah. Hubungi apotek untuk konfirmasi kunjungan.</p>
+          </article>
 
-        <p id="pesan-status" role="status"></p>
+          <article class="panel" aria-labelledby="judul-antrean-dokter">
+            <div class="panel-head">
+              <h3 class="panel-title" id="judul-antrean-dokter"><svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg>Antrean dokter</h3>
+              <span class="badge badge-yellow">Contoh</span>
+            </div>
 
-<div id="filter-kategori" role="group" aria-label="Filter kategori obat">
-  <button type="button" class="btn-filter aktif" data-filter="Semua">Semua</button>
-  <button type="button" class="btn-filter" data-filter="Obat Bebas">Obat Bebas</button>
-  <button type="button" class="btn-filter" data-filter="Resep Dokter">Resep Dokter</button>
-  <button type="button" class="btn-filter" data-filter="Skincare">Skincare</button>
-  <button type="button" class="btn-filter" data-filter="Susu &amp; Makanan">Susu &amp; Makanan</button>
-</div>
+            <div class="queue-now">
+              <div>
+                <p class="muted">Sedang dilayani</p>
+                <p class="queue-number" aria-label="Nomor antrean A012">A012</p>
+              </div>
+              <div class="queue-next">
+                <p class="muted">Berikutnya</p>
+                <p class="queue-next-number">A013</p>
+              </div>
+            </div>
 
-<p id="info-hasil" role="status"></p>
-<div id="daftar-obat"></div>
-<div id="detail-obat" aria-live="polite"></div>
+            <dl class="queue-meta">
+              <div><dt>Dokter bertugas</dt><dd>dr. Nadia Pratama</dd></div>
+              <div><dt>Menunggu</dt><dd>5 orang · estimasi ±25 menit</dd></div>
+            </dl>
+
+            <button type="button" class="btn btn-block" id="buka-antrean"><span>Ambil nomor antrean</span><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+            <p class="panel-note">Estimasi waktu dapat berubah sesuai pelayanan.</p>
+          </article>
+        </div>
+
+        <p class="note">Nama dokter, jadwal, dan nomor antrean adalah data contoh untuk demonstrasi antarmuka.</p>
+      </div>
     </section>
-
-      <hr />
-
-    <!-- ANTREAN DOKTER & KONSULTASI -->
-    <section id="antrean">
-      <h3>🩺 Antrean Dokter & Konsultasi</h3>
-      
-      <article>
-        <h4>Status Berjalan</h4>
-        <p><strong>A-014</strong></p>
-        <p>● Dokter Standby</p>
-      </article>
-
-      <article>
-        <h4>Pendaftaran Antrean Dokter</h4>
-        <p>Daftar antrean secara online tanpa perlu menunggu lama di lokasi.</p>
-        <a href="#">Daftar Antrean Dokter Sekarang</a>
-      </article>
-    </section>
-
-    <!-- FORM PENDAFTARAN ANTREAN DOKTER (TUGAS 06) -->
-<section id="daftar-antrean">
-  <h3>📝 Form Pendaftaran Antrean Dokter</h3>
-  <p>Kolom bertanda <span aria-hidden="true">*</span> wajib diisi.</p>
-
-  <div id="ringkasan-error" class="ringkasan-error" role="alert" hidden>
-    <h4>Terdapat <span id="jumlah-error"></span> isian yang perlu diperbaiki:</h4>
-    <ul id="daftar-error"></ul>
-  </div>
-
-  <form id="form-antrean" novalidate>
-    <div class="form-group">
-      <label for="nama">Nama lengkap <span aria-hidden="true">*</span></label>
-      <input type="text" id="nama" name="nama" required minlength="3" maxlength="60"
-             autocomplete="name" aria-describedby="bantuan-nama error-nama">
-      <small id="bantuan-nama" class="bantuan">Minimal 3 huruf, sesuai identitas.</small>
-      <small id="error-nama" class="error"></small>
-    </div>
-
-    <div class="form-group">
-      <label for="wa">Nomor WhatsApp <span aria-hidden="true">*</span></label>
-      <input type="tel" id="wa" name="wa" required maxlength="18" inputmode="tel"
-             autocomplete="tel" placeholder="0852-xxxx-xxxx"
-             aria-describedby="bantuan-wa error-wa">
-      <small id="bantuan-wa" class="bantuan">Contoh: 081234567890. Dipakai untuk notifikasi antrean.</small>
-      <small id="error-wa" class="error"></small>
-    </div>
-
-    <div class="form-group">
-      <label for="layanan">Layanan <span aria-hidden="true">*</span></label>
-      <select id="layanan" name="layanan" required aria-describedby="error-layanan">
-        <option value="">-- Pilih layanan --</option>
-        <option value="Konsultasi Dokter">Konsultasi Dokter</option>
-        <option value="Pemeriksaan GCU">Pemeriksaan GCU</option>
-        <option value="Tebus Resep Dokter">Tebus Resep Dokter</option>
-      </select>
-      <small id="error-layanan" class="error"></small>
-    </div>
-
-    <div class="form-group">
-      <label for="tanggal">Tanggal kunjungan <span aria-hidden="true">*</span></label>
-      <input type="date" id="tanggal" name="tanggal" required
-             aria-describedby="bantuan-tanggal error-tanggal">
-      <small id="bantuan-tanggal" class="bantuan">Mulai hari ini sampai 30 hari ke depan.</small>
-      <small id="error-tanggal" class="error"></small>
-    </div>
-
-    <div class="form-group">
-      <label for="keluhan">Keluhan singkat (opsional)</label>
-      <textarea id="keluhan" name="keluhan" rows="3" maxlength="200"
-                aria-describedby="bantuan-keluhan error-keluhan"></textarea>
-      <small id="bantuan-keluhan" class="bantuan">Maksimal 200 karakter.</small>
-      <small id="error-keluhan" class="error"></small>
-    </div>
-
-    <div class="form-group">
-      <div class="cek">
-        <input type="checkbox" id="setuju" name="setuju" required aria-describedby="error-setuju">
-        <label for="setuju">Saya menyetujui data ini digunakan untuk pendaftaran antrean. <span aria-hidden="true">*</span></label>
-      </div>
-      <small id="error-setuju" class="error"></small>
-    </div>
-
-    <button type="submit">Daftar Antrean</button>
-  </form>
-
-  <p id="form-status" role="status"></p>
-  <div id="hasil-pendaftaran" aria-live="polite"></div>
-</section>
-<!-- DASHBOARD STOK OBAT DARI REST API (TUGAS 07) -->
-<section id="dashboard" aria-labelledby="judul-dashboard">
-  <h3 id="judul-dashboard">📊 Dashboard Stok Obat</h3>
-  <p>Data stok dimuat dari API (<code>GET data/obat.json</code>) menggunakan Fetch, JSON, dan async/await.</p>
-
-  <!-- STATE: LOADING -->
-  <div id="dash-loading" class="dash-state dash-loading" role="status" hidden>
-    <span class="dash-spinner" aria-hidden="true"></span>
-    <span>Memuat data stok obat...</span>
-  </div>
-
-  <!-- STATE: ERROR -->
-  <div id="dash-error" class="dash-state dash-error" role="alert" hidden>
-    <p id="dash-error-pesan"></p>
-    <button type="button" id="dash-retry">🔄 Coba Lagi</button>
-  </div>
-
-  <!-- STATE: EMPTY (API mengembalikan data kosong) -->
-  <div id="dash-empty" class="dash-state dash-kosong" role="status" hidden>
-    <p>Belum ada data obat yang tersedia dari server.</p>
-  </div>
-
-  <!-- STATE: SUCCESS -->
-  <div id="dash-konten" hidden>
-    <div id="dash-statistik" class="dash-statistik"></div>
-
-    <div class="dash-kontrol" role="search" aria-label="Filter dashboard stok">
-      <div class="form-group">
-        <label for="dash-cari">Cari nama obat</label>
-        <input type="search" id="dash-cari" placeholder="Contoh: paracetamol" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label for="dash-kategori">Kategori</label>
-        <select id="dash-kategori"></select>
-      </div>
-      <div class="form-group">
-        <label for="dash-status">Status stok</label>
-        <select id="dash-status">
-          <option value="semua">Semua</option>
-          <option value="tersedia">Tersedia</option>
-          <option value="habis">Stok habis</option>
-        </select>
-      </div>
-      <button type="button" id="dash-muat-ulang" class="btn-filter">↻ Muat Ulang</button>
-    </div>
-
-    <p id="dash-info" class="dash-meta" role="status"></p>
-
-    <div id="dash-tabel-wrap" class="tabel-wrap">
-      <table class="tabel-obat">
-        <caption class="sr-only">Daftar stok obat Apotek Bina Farma</caption>
-        <thead>
-          <tr>
-            <th scope="col">Nama Obat</th>
-            <th scope="col">Kategori</th>
-            <th scope="col">Harga</th>
-            <th scope="col">Stok</th>
-            <th scope="col">Status</th>
-          </tr>
-        </thead>
-        <tbody id="dash-tbody"></tbody>
-      </table>
-    </div>
-
-    <!-- EMPTY karena pencarian/filter tidak cocok -->
-    <p id="dash-tidak-ada" class="dash-state dash-kosong" role="status" hidden>
-      Tidak ada obat yang cocok dengan pencarian atau filter Anda.
-    </p>
-
-    <p id="dash-diperbarui" class="dash-meta"></p>
-  </div>
-</section>
   </main>
 
-    <hr />
+  <!-- ================= FOOTER / KONTAK ================= -->
+  <footer class="site-footer" id="kontak">
+    <div class="container footer-grid">
+      <div>
+        <p class="footer-brand">Apotek Bina Farma</p>
+        <p>Kebutuhan sehat Anda, lebih dekat.</p>
+        <h2 class="footer-title">Kunjungi &amp; hubungi kami</h2>
+        <ul class="contact-list">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span>Jl. Aditiyawarman RT.09 No. 01, Kel. Karang Balik, Tarakan · <a href="https://maps.google.com/?q=Apotek+Bina+Farma+Tarakan" target="_blank" rel="noopener">Buka peta</a></span></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg><a href="https://wa.me/6285245748617" target="_blank" rel="noopener">0852-4574-8617 (WhatsApp)</a></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg><a href="mailto:binafarma.tarakan@gmail.com">binafarma.tarakan@gmail.com</a></li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg><a href="https://www.instagram.com/apotek__binafarma/" target="_blank" rel="noopener noreferrer">@apotek__binafarma</a></li>
+        </ul>
+      </div>
 
-  <!-- FOOTER KONTAK -->
-  <footer>
-    <section>
-      <h3>Apotek Bina Farma</h3>
-      <p>Mitra Layanan Kesehatan Anda</p>
-    </section>
-    
-    <address>
-      <p>📷 Instagram: @apotek_binafarma</p>
-      <p>✉️ Email: binafarma.tarakan@gmail.com</p>
-      <p>📞 No HP/WA: 0852-4574-8617</p>
-    </address>
+      <div>
+        <h2 class="footer-title">Jam operasional</h2>
+        <p>Setiap hari, buka 24 jam</p>
+      </div>
+
+      <div>
+        <h2 class="footer-title">Tautan cepat</h2>
+        <ul class="link-list">
+          <li><a href="#katalog">Katalog produk</a></li>
+          <li><a href="#antrean">Antrean dokter</a></li>
+          <li><a href="#kontak">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© 2026 Apotek Bina Farma. Konsep desain.</p>
+      <p>Harga, stok, dan jadwal pada halaman ini adalah data contoh.</p>
+    </div>
   </footer>
+
+  <!-- ================= DIALOG: DETAIL PRODUK ================= -->
+  <dialog id="dialog-detail" aria-labelledby="detail-judul">
+    <div class="dialog-body">
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="eyebrow" id="detail-kategori"></p>
+      <h2 id="detail-judul"></h2>
+      <dl class="detail-list" id="detail-list"></dl>
+      <p class="note" id="detail-catatan" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-outline" data-close-dialog>Tutup</button>
+        <button type="button" class="btn" id="detail-beli" hidden>Tambah ke keranjang</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================= DIALOG: KERANJANG ================= -->
+  <dialog id="dialog-keranjang" aria-labelledby="keranjang-judul">
+    <div class="dialog-body">
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+      <h2 id="keranjang-judul">Keranjang</h2>
+      <p class="muted" id="keranjang-kosong" hidden>Keranjang masih kosong. Pilih produk di katalog lalu tekan Beli.</p>
+      <ul class="cart-list" id="keranjang-list"></ul>
+      <p class="cart-total" id="keranjang-total" hidden><span>Total</span><strong id="keranjang-total-nilai"></strong></p>
+      <p class="note"><svg class="icon" aria-hidden="true"><use href="#i-info"/></svg><span>Pembayaran belum tersedia di web. Pesanan dapat dilanjutkan lewat WhatsApp apotek.</span></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-outline" id="keranjang-kosongkan">Kosongkan</button>
+        <a class="btn" id="keranjang-wa" href="#" target="_blank" rel="noopener">Pesan via WhatsApp</a>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================= DIALOG: FORM ANTREAN ================= -->
+  <dialog id="dialog-antrean" aria-labelledby="judul-form-antrean">
+    <div class="dialog-body">
+      <button type="button" class="dialog-close" data-close-dialog aria-label="Tutup"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+      <h2 id="judul-form-antrean">Ambil nomor antrean</h2>
+      <p class="muted">Kolom bertanda <span aria-hidden="true">*</span> wajib diisi.</p>
+
+      <div id="ringkasan-error" class="ringkasan-error" role="alert" hidden>
+        <h3>Terdapat <span id="jumlah-error"></span> isian yang perlu diperbaiki:</h3>
+        <ul id="daftar-error"></ul>
+      </div>
+
+      <form id="form-antrean" novalidate>
+        <div class="form-group">
+          <label for="nama">Nama lengkap <span aria-hidden="true">*</span></label>
+          <input type="text" id="nama" name="nama" required minlength="3" maxlength="60" autocomplete="name" aria-describedby="bantuan-nama error-nama">
+          <small id="bantuan-nama" class="bantuan">Minimal 3 huruf, sesuai identitas.</small>
+          <small id="error-nama" class="error"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="wa">Nomor WhatsApp <span aria-hidden="true">*</span></label>
+          <input type="tel" id="wa" name="wa" required maxlength="18" inputmode="tel" autocomplete="tel" placeholder="0852-xxxx-xxxx" aria-describedby="bantuan-wa error-wa">
+          <small id="bantuan-wa" class="bantuan">Contoh: 081234567890. Dipakai untuk notifikasi antrean.</small>
+          <small id="error-wa" class="error"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="layanan">Layanan <span aria-hidden="true">*</span></label>
+          <select id="layanan" name="layanan" required aria-describedby="error-layanan">
+            <option value="">-- Pilih layanan --</option>
+            <option value="Konsultasi Dokter">Konsultasi Dokter</option>
+            <option value="Pemeriksaan GCU">Pemeriksaan GCU</option>
+            <option value="Tebus Resep Dokter">Tebus Resep Dokter</option>
+          </select>
+          <small id="error-layanan" class="error"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="tanggal">Tanggal kunjungan <span aria-hidden="true">*</span></label>
+          <input type="date" id="tanggal" name="tanggal" required aria-describedby="bantuan-tanggal error-tanggal">
+          <small id="bantuan-tanggal" class="bantuan">Mulai hari ini sampai 30 hari ke depan.</small>
+          <small id="error-tanggal" class="error"></small>
+        </div>
+
+        <div class="form-group">
+          <label for="keluhan">Keluhan singkat (opsional)</label>
+          <textarea id="keluhan" name="keluhan" rows="3" maxlength="200" aria-describedby="bantuan-keluhan error-keluhan"></textarea>
+          <small id="bantuan-keluhan" class="bantuan">Maksimal 200 karakter.</small>
+          <small id="error-keluhan" class="error"></small>
+        </div>
+
+        <div class="form-group">
+          <div class="cek">
+            <input type="checkbox" id="setuju" name="setuju" required aria-describedby="error-setuju">
+            <label for="setuju">Saya menyetujui data ini digunakan untuk pendaftaran antrean. <span aria-hidden="true">*</span></label>
+          </div>
+          <small id="error-setuju" class="error"></small>
+        </div>
+
+        <button type="submit" class="btn btn-block">Daftar Antrean</button>
+      </form>
+
+      <p id="form-status" role="status"></p>
+      <div id="hasil-pendaftaran" aria-live="polite"></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
-
-

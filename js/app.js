@@ -1,233 +1,396 @@
-// js/app.js
-import { 
-  filterKategori, 
-  cariObat, 
-  hitungTotalStok, 
-  formatRingkasanObat 
-} from './utils.js';
-import { cariBerdasarkanNama, cariObatById } from './utils.js';
+// js/app.js | Apotek Bina Farma (tampilan pengguna)
+import { ambilDataObat, pesanErrorRamah } from './api.js';
 import { bacaDataAntrean, validasiAntrean, tanggalLokal } from './utils.js';
-import { ambilDataObat, pesanErrorRamah, ENDPOINT_OBAT } from './api.js';
-import { hitungStatistikObat, filterDashboard, formatRupiah } from './utils.js';
-// Data Inventaris Obat Apotek Bina Farma
-const inventarisApotek = [
-  { id: 1, nama: 'Paracetamol 500mg', kategori: 'Obat Bebas', harga: 5000, stok: 50, ketersediaan: true },
-  { id: 2, nama: 'Amoxicillin 500mg', kategori: 'Resep Dokter', harga: 12000, stok: 20, ketersediaan: true },
-  { id: 3, nama: 'Herborist Juice for Skin', kategori: 'Skincare', harga: 25000, stok: 15, ketersediaan: true },
-  { id: 4, nama: 'Vitamin C 1000mg', kategori: 'Obat Bebas', harga: 15000, stok: 0, ketersediaan: false },
-  { id: 5, nama: 'Milna Rice Crackers', kategori: 'Susu & Makanan', harga: 18000, stok: 30, ketersediaan: true }
-];
 
-console.log('=== APLIKASI MANAGEMENT APOTEK BINA FARMA ===\n');
+/* ==================== HELPER UMUM ==================== */
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-try {
-  // 1. Ambil daftar nama obat yang tersedia menggunakan map
-  const daftarNamaObat = inventarisApotek
-    .filter(item => item.ketersediaan)
-    .map(({ nama, harga }) => `${nama} (Rp${harga.toLocaleString('id-ID')})`);
-  
-  console.log('--- Obat Ready Stok ---');
-  console.table(daftarNamaObat);
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const NOMOR_WA = '6285245748617';
+const CART_KEY = 'binafarma_cart'; // hanya id produk dan jumlah (data non-sensitif)
 
-  // 2. Filter obat berdasarkan kategori 'Obat Bebas'
-  const obatBebas = filterKategori(inventarisApotek, 'Obat Bebas');
-  console.log('\n--- Kategori Obat Bebas ---');
-  console.table(obatBebas);
+const rupiah = (angka) => `Rp${Number(angka).toLocaleString('id-ID')}`;
+const kapital = (teks) => (teks ? teks.charAt(0).toUpperCase() + teks.slice(1) : '');
 
-  // 3. Cari obat spesifik dengan find
-  const obatDicari = cariObat(inventarisApotek, 'Amoxicillin');
-  console.log('\n--- Hasil Pencarian Obat ---');
-  if (obatDicari) {
-    console.log(formatRingkasanObat(obatDicari));
-  } else {
-    console.log('Obat tidak ditemukan.');
-  }
-
-  // 4. Hitung total aset nilai stok obat dengan reduce
-  const totalAset = hitungTotalStok(inventarisApotek);
-  console.log(`\n--- Total Nilai Stok Inventaris: Rp${totalAset.toLocaleString('id-ID')} ---`);
-
-} catch (error) {
-  // Error handling dasar
-  console.error('Terjadi kesalahan pada pengolahan data:', error.message);
-}
-// ==========================================
-// TUGAS 05 OBE: DOM, EVENT & WEB STORAGE
-// ==========================================
-
-// --- Seleksi elemen ---
-const daftarObat = document.querySelector('#daftar-obat');
-const detailObat = document.querySelector('#detail-obat');
-const infoHasil = document.querySelector('#info-hasil');
-const inputCari = document.querySelector('#cari-obat');
-const tombolFilter = document.querySelectorAll('[data-filter]');
-const formShop = document.querySelector('#shop form');
-const pesanStatus = document.querySelector('#pesan-status');
-const themeButton = document.querySelector('#theme-button');
-
-// --- State sederhana ---
-const state = { kategori: 'Semua', keyword: '' };
-
-// --- Render DOM aman (tanpa innerHTML) ---
-function buatKartuObat(obat) {
-  const { id, nama, kategori, harga, stok, ketersediaan } = obat;
-
-  const kartu = document.createElement('article');
-  kartu.className = 'card-obat';
-
-  const judul = document.createElement('h4');
-  judul.textContent = nama;
-
-  const info = document.createElement('p');
-  info.textContent = `${kategori} • Rp${harga.toLocaleString('id-ID')}`;
-
-  const badge = document.createElement('span');
-  badge.className = `badge-stok ${ketersediaan ? 'ada' : 'habis'}`;
-  badge.textContent = ketersediaan ? `Stok: ${stok}` : 'Stok Habis';
-
-  const tombol = document.createElement('button');
-  tombol.type = 'button';
-  tombol.className = 'btn-detail';
-  tombol.dataset.id = id;
-  tombol.textContent = 'Detail';
-
-  kartu.append(judul, info, badge, tombol);
-  return kartu;
+/** Buat elemen dengan teks aman (textContent, bukan innerHTML). */
+function el(tag, className = '', text = '') {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== '') node.textContent = text;
+  return node;
 }
 
-function renderObat(items) {
-  daftarObat.replaceChildren();
-
-  if (items.length === 0) {
-    const kosong = document.createElement('p');
-    kosong.textContent = 'Obat yang Anda cari tidak ditemukan.';
-    daftarObat.append(kosong);
-    return;
-  }
-
-  daftarObat.append(...items.map(buatKartuObat));
+/** Ikon dari kumpulan <symbol> di index.html. */
+function icon(name) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(SVG_NS, 'use');
+  use.setAttribute('href', `#i-${name}`);
+  svg.append(use);
+  return svg;
 }
 
-function perbaruiDaftar() {
-  try {
-    const berdasarkanKategori =
-      state.kategori === 'Semua'
-        ? inventarisApotek
-        : filterKategori(inventarisApotek, state.kategori);
-
-    const hasil = cariBerdasarkanNama(berdasarkanKategori, state.keyword);
-
-    renderObat(hasil);
-    infoHasil.textContent = `Menampilkan ${hasil.length} dari ${inventarisApotek.length} obat`;
-    detailObat.replaceChildren(); // tutup panel detail lama
-  } catch (error) {
-    infoHasil.textContent = 'Gagal menampilkan daftar obat.';
-    console.error('Error render katalog:', error.message);
-  }
+function scrollKe(selector) {
+  const kurangiGerak = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  $(selector)?.scrollIntoView({ behavior: kurangiGerak ? 'auto' : 'smooth', block: 'start' });
 }
 
-// --- INTERAKSI 1a: filter kategori (event click) ---
-tombolFilter.forEach((tombol) => {
-  tombol.addEventListener('click', () => {
-    state.kategori = tombol.dataset.filter;
-    tombolFilter.forEach((t) => t.classList.toggle('aktif', t === tombol));
-    perbaruiDaftar();
+/* ---------- Dialog ---------- */
+function bukaDialog(dialog) {
+  if (typeof dialog.showModal === 'function') dialog.showModal();
+  else dialog.setAttribute('open', '');
+}
+
+document.addEventListener('click', (event) => {
+  const tombolTutup = event.target.closest('[data-close-dialog]');
+  if (tombolTutup) tombolTutup.closest('dialog')?.close();
+});
+// klik di area gelap (di luar kotak) menutup dialog
+$$('dialog').forEach((dialog) => {
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
   });
 });
 
-// --- INTERAKSI 1b: pencarian real-time (event input) ---
+/* ---------- Toast ---------- */
+const toast = $('#toast');
+let toastTimer;
+function tampilkanToast(pesan) {
+  toast.textContent = pesan;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 2600);
+}
+
+/* ==================== STATE ==================== */
+const state = { data: [], kategori: 'semua', keyword: '' };
+
+const temukanObat = (id) => state.data.find((obat) => obat.id === Number(id));
+const bisaDibeli = (obat) => obat.stok > 0 && obat.kategori !== 'Resep Dokter';
+
+/* ==================== KERANJANG ==================== */
+function muatKeranjang() {
+  try {
+    const mentah = JSON.parse(localStorage.getItem(CART_KEY) ?? '[]');
+    return new Map(mentah.filter(([id, jumlah]) => Number.isInteger(id) && Number.isInteger(jumlah) && jumlah > 0));
+  } catch {
+    return new Map();
+  }
+}
+const keranjang = muatKeranjang();
+
+function simpanKeranjang() {
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify([...keranjang]));
+  } catch (error) {
+    console.warn('Keranjang tidak dapat disimpan:', error.message);
+  }
+}
+
+function totalItem() {
+  return [...keranjang.values()].reduce((a, b) => a + b, 0);
+}
+
+function perbaruiBadgeKeranjang() {
+  const total = totalItem();
+  const badge = $('#cart-count');
+  badge.textContent = String(total);
+  badge.hidden = total === 0;
+  $('#cart-button').setAttribute('aria-label', `Keranjang, ${total} item`);
+}
+
+/** Buang item yang produknya sudah tidak ada/habis, dan sesuaikan jumlah dengan stok. */
+function rapikanKeranjang() {
+  for (const [id, jumlah] of keranjang) {
+    const obat = temukanObat(id);
+    if (!obat || !bisaDibeli(obat)) keranjang.delete(id);
+    else if (jumlah > obat.stok) keranjang.set(id, obat.stok);
+  }
+  simpanKeranjang();
+  perbaruiBadgeKeranjang();
+}
+
+function tambahKeKeranjang(obat) {
+  if (!obat || !bisaDibeli(obat)) return;
+  const sekarang = keranjang.get(obat.id) ?? 0;
+  if (sekarang >= obat.stok) {
+    tampilkanToast(`Stok ${obat.nama} terbatas (${obat.stok})`);
+    return;
+  }
+  keranjang.set(obat.id, sekarang + 1);
+  simpanKeranjang();
+  perbaruiBadgeKeranjang();
+  tampilkanToast(`${obat.nama} ditambahkan ke keranjang`);
+}
+
+function renderKeranjang() {
+  const daftar = $('#keranjang-list');
+  daftar.replaceChildren();
+
+  let total = 0;
+  const barisPesan = [];
+
+  for (const [id, jumlah] of keranjang) {
+    const obat = temukanObat(id);
+    if (!obat) continue;
+
+    const subtotal = obat.harga * jumlah;
+    total += subtotal;
+    barisPesan.push(`- ${jumlah}x ${obat.nama} (${rupiah(subtotal)})`);
+
+    const item = el('li', 'cart-item');
+    const info = el('div');
+    info.append(el('p', 'cart-name', obat.nama), el('p', 'muted', `${rupiah(obat.harga)} x ${jumlah} = ${rupiah(subtotal)}`));
+
+    const atur = el('div', 'qty');
+    const kurang = el('button', '', '−');
+    kurang.type = 'button';
+    kurang.dataset.cart = 'minus';
+    kurang.dataset.id = String(id);
+    kurang.setAttribute('aria-label', `Kurangi ${obat.nama}`);
+
+    const angka = el('span', '', String(jumlah));
+
+    const tambah = el('button', '', '+');
+    tambah.type = 'button';
+    tambah.dataset.cart = 'plus';
+    tambah.dataset.id = String(id);
+    tambah.setAttribute('aria-label', `Tambah ${obat.nama}`);
+
+    const hapus = el('button', 'link-btn', 'Hapus');
+    hapus.type = 'button';
+    hapus.dataset.cart = 'hapus';
+    hapus.dataset.id = String(id);
+    hapus.setAttribute('aria-label', `Hapus ${obat.nama} dari keranjang`);
+
+    atur.append(kurang, angka, tambah, hapus);
+    item.append(info, atur);
+    daftar.append(item);
+  }
+
+  const kosong = barisPesan.length === 0;
+  $('#keranjang-kosong').hidden = !kosong;
+  $('#keranjang-total').hidden = kosong;
+  $('#keranjang-total-nilai').textContent = rupiah(total);
+  $('#keranjang-kosongkan').hidden = kosong;
+
+  const wa = $('#keranjang-wa');
+  wa.hidden = kosong;
+  if (!kosong) {
+    const pesan = ['Halo Apotek Bina Farma, saya ingin memesan:', ...barisPesan, `Total: ${rupiah(total)}`].join('\n');
+    wa.href = `https://wa.me/${NOMOR_WA}?text=${encodeURIComponent(pesan)}`;
+  }
+}
+
+$('#cart-button').addEventListener('click', () => {
+  renderKeranjang();
+  bukaDialog($('#dialog-keranjang'));
+});
+
+$('#keranjang-list').addEventListener('click', (event) => {
+  const tombol = event.target.closest('button[data-cart]');
+  if (!tombol) return;
+
+  const id = Number(tombol.dataset.id);
+  const obat = temukanObat(id);
+  const jumlah = keranjang.get(id) ?? 0;
+
+  if (tombol.dataset.cart === 'plus') {
+    if (obat && jumlah < obat.stok) keranjang.set(id, jumlah + 1);
+    else tampilkanToast('Stok terbatas');
+  } else if (tombol.dataset.cart === 'minus') {
+    if (jumlah <= 1) keranjang.delete(id);
+    else keranjang.set(id, jumlah - 1);
+  } else if (tombol.dataset.cart === 'hapus') {
+    keranjang.delete(id);
+  }
+
+  simpanKeranjang();
+  perbaruiBadgeKeranjang();
+  renderKeranjang();
+});
+
+$('#keranjang-kosongkan').addEventListener('click', () => {
+  keranjang.clear();
+  simpanKeranjang();
+  perbaruiBadgeKeranjang();
+  renderKeranjang();
+});
+
+/* ==================== KATALOG PRODUK ==================== */
+const gridKatalog = $('#katalog-grid');
+
+function buatKartu(obat) {
+  const habis = obat.stok <= 0;
+  const resep = obat.kategori === 'Resep Dokter';
+
+  const kartu = el('article', 'product-card');
+  kartu.append(
+    el('span', `status-badge ${habis ? 'is-habis' : 'is-ada'}`, habis ? 'Habis' : 'Tersedia'),
+    el('p', `product-kategori${resep ? ' is-resep' : ''}`, resep ? 'Wajib resep dokter' : obat.kategori),
+    el('h3', 'product-name', obat.nama)
+  );
+
+  const meta = [kapital(obat.satuan), obat.kemasan].filter(Boolean).join(' · ');
+  if (meta) kartu.append(el('p', 'product-meta', meta));
+
+  kartu.append(el('p', 'product-price', rupiah(obat.harga)));
+
+  const beli = bisaDibeli(obat);
+  const tombol = el('button', 'btn btn-block');
+  tombol.type = 'button';
+  tombol.dataset.aksi = beli ? 'beli' : 'detail';
+  tombol.dataset.id = String(obat.id);
+  tombol.setAttribute('aria-label', `${beli ? 'Beli' : 'Lihat detail'} ${obat.nama}`);
+  tombol.append(el('span', '', beli ? 'Beli' : 'Detail'), icon(beli ? 'plus' : 'arrow'));
+  kartu.append(tombol);
+
+  return kartu;
+}
+
+function renderKatalog() {
+  const kunci = state.keyword.trim().toLowerCase();
+  const hasil = state.data.filter(
+    (obat) =>
+      (state.kategori === 'semua' || obat.kategori === state.kategori) &&
+      (!kunci || obat.nama.toLowerCase().includes(kunci))
+  );
+
+  gridKatalog.replaceChildren(...hasil.map(buatKartu));
+  $('#katalog-tidak-ada').hidden = hasil.length > 0;
+  $('#katalog-info').textContent = `Menampilkan ${hasil.length} dari ${state.data.length} produk`;
+}
+
+function aturStateKatalog(keadaan) {
+  $('#katalog-loading').hidden = keadaan !== 'loading';
+  $('#katalog-error').hidden = keadaan !== 'error';
+  $('#katalog-kosong').hidden = keadaan !== 'kosong';
+  $('#katalog-konten').hidden = keadaan !== 'ok';
+}
+
+async function muatKatalog() {
+  aturStateKatalog('loading');
+
+  try {
+    state.data = await ambilDataObat();
+
+    if (state.data.length === 0) {
+      aturStateKatalog('kosong');
+      return;
+    }
+
+    rapikanKeranjang();
+    renderKatalog();
+    aturStateKatalog('ok');
+  } catch (error) {
+    console.error('Gagal memuat katalog:', error); // detail teknis hanya di Console
+    $('#katalog-error-pesan').textContent = pesanErrorRamah(error);
+    aturStateKatalog('error');
+  }
+}
+
+$('#katalog-retry').addEventListener('click', muatKatalog);
+
+// Filter kategori
+$$('.pill').forEach((tombol) => {
+  tombol.addEventListener('click', () => {
+    state.kategori = tombol.dataset.kategori;
+    $$('.pill').forEach((pill) => {
+      const aktif = pill === tombol;
+      pill.classList.toggle('is-active', aktif);
+      pill.setAttribute('aria-pressed', String(aktif));
+    });
+    renderKatalog();
+  });
+});
+
+// Pencarian (kolom di hero dan chip "Sering dicari")
+const inputCari = $('#cari-produk');
+
 inputCari.addEventListener('input', () => {
   state.keyword = inputCari.value;
-  perbaruiDaftar();
+  renderKatalog();
 });
 
-// --- INTERAKSI 2: event delegation pada tombol Detail ---
-function tampilkanDetail(obat) {
-  detailObat.replaceChildren();
+$('#search-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  state.keyword = inputCari.value;
+  renderKatalog();
+  scrollKe('#katalog');
+});
+
+$$('[data-cari]').forEach((chip) => {
+  chip.addEventListener('click', () => {
+    inputCari.value = chip.dataset.cari;
+    state.keyword = chip.dataset.cari;
+    renderKatalog();
+    scrollKe('#katalog');
+  });
+});
+
+// Event delegation: tombol Beli / Detail pada semua kartu
+gridKatalog.addEventListener('click', (event) => {
+  const tombol = event.target.closest('button[data-aksi]');
+  if (!tombol) return;
+
+  const obat = temukanObat(tombol.dataset.id);
   if (!obat) return;
 
-  const panel = document.createElement('div');
-  panel.className = 'panel-detail';
-
-  const judul = document.createElement('h4');
-  judul.textContent = 'Detail Obat';
-
-  const ringkasan = document.createElement('p');
-  ringkasan.textContent = formatRingkasanObat(obat);
-
-  panel.append(judul, ringkasan);
-
-  if (obat.kategori === 'Resep Dokter') {
-    const catatan = document.createElement('p');
-    catatan.textContent = 'Obat ini hanya dapat ditebus dengan resep dokter. Silakan unggah resep Anda.';
-    panel.append(catatan);
-  }
-
-  const tutup = document.createElement('button');
-  tutup.type = 'button';
-  tutup.textContent = 'Tutup';
-  tutup.addEventListener('click', () => detailObat.replaceChildren());
-
-  panel.append(tutup);
-  detailObat.append(panel);
-}
-
-daftarObat.addEventListener('click', (event) => {
-  const tombol = event.target.closest('.btn-detail');
-  if (!tombol || !daftarObat.contains(tombol)) return;
-  tampilkanDetail(cariObatById(inventarisApotek, tombol.dataset.id));
+  if (tombol.dataset.aksi === 'beli') tambahKeKeranjang(obat);
+  else tampilkanDetail(obat);
 });
 
-// --- Event submit: cegah reload halaman ---
-formShop.addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (document.activeElement === inputCari) return; // Enter saat mengetik pencarian
-  pesanStatus.textContent = 'Fitur unggah resep dokter akan segera tersedia. Silakan kunjungi apotek atau hubungi WhatsApp kami.';
-});
+/* ---------- Detail produk ---------- */
+function tampilkanDetail(obat) {
+  const resep = obat.kategori === 'Resep Dokter';
 
-// --- INTERAKSI 3: tema gelap/terang + localStorage ---
-const TEMA_KEY = 'theme';
+  $('#detail-kategori').textContent = resep ? 'Wajib resep dokter' : obat.kategori;
+  $('#detail-judul').textContent = obat.nama;
 
-function terapkanTema(tema) {
-  document.documentElement.dataset.theme = tema;
-  themeButton.textContent = tema === 'dark' ? '☀️ Mode Terang' : '🌙 Mode Gelap';
+  const baris = [
+    ['Harga', rupiah(obat.harga)],
+    ['Kemasan', [kapital(obat.satuan), obat.kemasan].filter(Boolean).join(' · ') || '-'],
+    ['Ketersediaan', obat.stok > 0 ? 'Tersedia' : 'Stok habis']
+  ];
+  const daftar = $('#detail-list');
+  daftar.replaceChildren();
+  for (const [label, nilai] of baris) {
+    daftar.append(el('dt', '', label), el('dd', '', nilai));
+  }
+
+  const catatan = $('#detail-catatan');
+  catatan.hidden = !resep;
+  catatan.textContent = 'Obat ini hanya dapat dibeli dengan resep dokter yang valid. Silakan datang ke apotek atau hubungi kami lewat WhatsApp.';
+
+  const tombolBeli = $('#detail-beli');
+  tombolBeli.hidden = !bisaDibeli(obat);
+  tombolBeli.dataset.id = String(obat.id);
+
+  bukaDialog($('#dialog-detail'));
 }
 
-function bacaTema() {
-  try {
-    return localStorage.getItem(TEMA_KEY) === 'dark' ? 'dark' : 'light';
-  } catch {
-    return 'light'; // localStorage tidak tersedia
-  }
-}
-
-themeButton.addEventListener('click', () => {
-  const temaBaru = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  terapkanTema(temaBaru);
-  try {
-    localStorage.setItem(TEMA_KEY, temaBaru);
-  } catch (error) {
-    console.warn('Tema tidak dapat disimpan:', error.message);
-  }
+$('#detail-beli').addEventListener('click', (event) => {
+  tambahKeKeranjang(temukanObat(event.currentTarget.dataset.id));
+  $('#dialog-detail').close();
 });
 
-// ==========================================
-// TUGAS 06 OBE: FORM AKSESIBEL & VALIDASI
-// ==========================================
-const formAntrean = document.querySelector('#form-antrean');
-const ringkasanError = document.querySelector('#ringkasan-error');
-const jumlahError = document.querySelector('#jumlah-error');
-const daftarError = document.querySelector('#daftar-error');
-const statusForm = document.querySelector('#form-status');
-const hasilDaftar = document.querySelector('#hasil-pendaftaran');
+/* ==================== FORM ANTREAN (validasi dari Tugas 6) ==================== */
+const formAntrean = $('#form-antrean');
+const ringkasanError = $('#ringkasan-error');
+const jumlahError = $('#jumlah-error');
+const daftarError = $('#daftar-error');
+const statusForm = $('#form-status');
+const hasilDaftar = $('#hasil-pendaftaran');
 
-// Batas tanggal di date picker (HTML constraint, diisi dinamis)
+// batas tanggal pada date picker (HTML constraint, diisi dinamis)
 formAntrean.elements.tanggal.min = tanggalLokal();
 formAntrean.elements.tanggal.max = tanggalLokal(30);
 
 function bersihkanError() {
-  formAntrean.querySelectorAll('.error').forEach((el) => { el.textContent = ''; });
-  formAntrean.querySelectorAll('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+  $$('.error', formAntrean).forEach((node) => { node.textContent = ''; });
+  $$('[aria-invalid]', formAntrean).forEach((node) => node.removeAttribute('aria-invalid'));
   daftarError.replaceChildren();
   ringkasanError.hidden = true;
   statusForm.textContent = '';
@@ -238,26 +401,20 @@ function tampilkanError(errors) {
   const daftar = Object.entries(errors);
 
   for (const [field, pesan] of daftar) {
-    document.querySelector(`#error-${field}`).textContent = pesan;
+    $(`#error-${field}`).textContent = pesan;
     formAntrean.elements[field].setAttribute('aria-invalid', 'true');
-
-    const item = document.createElement('li');
-    item.textContent = pesan;
-    daftarError.append(item);
+    daftarError.append(el('li', '', pesan));
   }
 
-  jumlahError.textContent = daftar.length;
+  jumlahError.textContent = String(daftar.length);
   ringkasanError.hidden = false;
   statusForm.textContent = 'Periksa kembali data yang belum valid.';
   formAntrean.elements[daftar[0][0]].focus(); // fokus ke error pertama
 }
 
 function tampilkanPreview(data) {
-  const panel = document.createElement('div');
-  panel.className = 'panel-detail';
-
-  const judul = document.createElement('h4');
-  judul.textContent = 'Data valid — preview pendaftaran';
+  const kotak = el('div', 'preview-box');
+  kotak.append(el('h3', '', 'Data valid, preview pendaftaran'));
 
   const dl = document.createElement('dl');
   const baris = [
@@ -268,19 +425,18 @@ function tampilkanPreview(data) {
     ['Keluhan', data.keluhan || '-']
   ];
   for (const [label, nilai] of baris) {
-    const dt = document.createElement('dt');
-    dt.textContent = label;
-    const dd = document.createElement('dd');
-    dd.textContent = nilai;
-    dl.append(dt, dd);
+    dl.append(el('dt', '', label), el('dd', '', nilai));
   }
-
-  const catatan = document.createElement('p');
-  catatan.textContent = 'Data belum dikirim ke server. Validasi server akan ditambahkan pada modul backend.';
-
-  panel.append(judul, dl, catatan);
-  hasilDaftar.append(panel);
+  kotak.append(dl, el('p', 'muted', 'Data belum dikirim ke server. Penyimpanan antrean akan dihubungkan pada tahap berikutnya.'));
+  hasilDaftar.append(kotak);
 }
+
+$('#buka-antrean').addEventListener('click', () => {
+  formAntrean.reset();
+  bersihkanError();
+  bukaDialog($('#dialog-antrean'));
+  formAntrean.elements.nama.focus();
+});
 
 formAntrean.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -291,170 +447,33 @@ formAntrean.addEventListener('submit', (event) => {
 
   if (Object.keys(errors).length > 0) {
     tampilkanError(errors);
-    return; // jangan lanjut kalau masih ada error
+    return;
   }
 
   statusForm.textContent = 'Data valid dan siap dikirim.';
   tampilkanPreview(data);
 });
 
-// --- Inisialisasi ---
-terapkanTema(bacaTema());
-perbaruiDaftar();
+// error hilang otomatis saat field sudah diperbaiki
+formAntrean.addEventListener('input', (event) => {
+  const field = event.target;
+  if (field.getAttribute('aria-invalid') !== 'true') return;
 
-// ==========================================
-// TUGAS 07 OBE: REST API / MINI DASHBOARD
-// ==========================================
-const dashLoading = document.querySelector('#dash-loading');
-const dashError = document.querySelector('#dash-error');
-const dashErrorPesan = document.querySelector('#dash-error-pesan');
-const dashRetry = document.querySelector('#dash-retry');
-const dashEmpty = document.querySelector('#dash-empty');
-const dashKonten = document.querySelector('#dash-konten');
-const dashStatistik = document.querySelector('#dash-statistik');
-const dashCari = document.querySelector('#dash-cari');
-const dashKategori = document.querySelector('#dash-kategori');
-const dashStatus = document.querySelector('#dash-status');
-const dashMuatUlang = document.querySelector('#dash-muat-ulang');
-const dashInfo = document.querySelector('#dash-info');
-const dashTabelWrap = document.querySelector('#dash-tabel-wrap');
-const dashTbody = document.querySelector('#dash-tbody');
-const dashTidakAda = document.querySelector('#dash-tidak-ada');
-const dashDiperbarui = document.querySelector('#dash-diperbarui');
-
-// Data asli disimpan sekali; filter bekerja di data ini tanpa request ulang
-const dashState = { data: [], keyword: '', status: 'semua', kategori: 'semua' };
-
-// Hanya satu state yang tampil dalam satu waktu
-function aturTampilan(keadaan) {
-  dashLoading.hidden = keadaan !== 'loading';
-  dashError.hidden = keadaan !== 'error';
-  dashEmpty.hidden = keadaan !== 'empty';
-  dashKonten.hidden = keadaan !== 'success';
-}
-
-// --- Render aman (createElement + textContent, tanpa innerHTML) ---
-function buatKartuStat(label, nilai) {
-  const kartu = document.createElement('div');
-  kartu.className = 'stat-card';
-
-  const angka = document.createElement('strong');
-  angka.textContent = String(nilai);
-
-  const teks = document.createElement('span');
-  teks.textContent = label;
-
-  kartu.append(angka, teks);
-  return kartu;
-}
-
-function renderStatistik(data) {
-  const s = hitungStatistikObat(data);
-  dashStatistik.replaceChildren(
-    buatKartuStat('Jenis obat', s.total),
-    buatKartuStat('Obat tersedia', s.tersedia),
-    buatKartuStat('Stok habis', s.habis),
-    buatKartuStat('Total nilai stok', formatRupiah(s.nilaiStok))
-  );
-}
-
-function isiOpsiKategori(data) {
-  const kategoriUnik = [...new Set(data.map((o) => o.kategori))].sort();
-  dashKategori.replaceChildren(
-    new Option('Semua kategori', 'semua'),
-    ...kategoriUnik.map((k) => new Option(k, k))
-  );
-}
-
-function buatSel(teks) {
-  const td = document.createElement('td');
-  td.textContent = teks;
-  return td;
-}
-
-function renderTabel(items) {
-  dashTbody.replaceChildren();
-
-  for (const obat of items) {
-    const baris = document.createElement('tr');
-
-    const tdStatus = document.createElement('td');
-    const badge = document.createElement('span');
-    badge.className = `badge-stok ${obat.ketersediaan ? 'ada' : 'habis'}`;
-    badge.textContent = obat.ketersediaan ? 'Tersedia' : 'Stok Habis';
-    tdStatus.append(badge);
-
-    baris.append(
-      buatSel(obat.nama),
-      buatSel(obat.kategori),
-      buatSel(formatRupiah(obat.harga)),
-      buatSel(`${obat.stok} ${obat.satuan ?? 'unit'}`),
-      tdStatus
-    );
-    dashTbody.append(baris);
+  const errors = validasiAntrean(bacaDataAntrean(formAntrean));
+  if (!errors[field.name]) {
+    field.removeAttribute('aria-invalid');
+    $(`#error-${field.name}`).textContent = '';
   }
-}
-
-function renderDashboard() {
-  const hasil = filterDashboard(dashState.data, dashState);
-  renderTabel(hasil);
-  dashTabelWrap.hidden = hasil.length === 0;
-  dashTidakAda.hidden = hasil.length > 0;
-  dashInfo.textContent = `Menampilkan ${hasil.length} dari ${dashState.data.length} obat`;
-}
-
-// --- Fungsi utama: fetch + async/await + try/catch ---
-async function muatDashboard() {
-  aturTampilan('loading');
-
-  try {
-    const data = await ambilDataObat();
-    dashState.data = data;
-
-    if (data.length === 0) {
-      aturTampilan('empty');
-      return;
-    }
-
-    // reset filter setiap data baru dimuat
-    dashState.keyword = '';
-    dashState.status = 'semua';
-    dashState.kategori = 'semua';
-    dashCari.value = '';
-    dashStatus.value = 'semua';
-
-    isiOpsiKategori(data);
-    renderStatistik(data);
-    renderDashboard();
-    dashDiperbarui.textContent =
-      `Terakhir dimuat: ${new Date().toLocaleTimeString('id-ID')} • Sumber: ${ENDPOINT_OBAT}`;
-
-    aturTampilan('success');
-  } catch (error) {
-    console.error('Gagal memuat dashboard:', error); // detail teknis hanya di Console
-    dashErrorPesan.textContent = pesanErrorRamah(error); // pengguna melihat pesan ramah
-    aturTampilan('error');
-  }
-}
-
-// --- Event ---
-dashCari.addEventListener('input', () => {
-  dashState.keyword = dashCari.value;
-  renderDashboard();
 });
 
-dashKategori.addEventListener('change', () => {
-  dashState.kategori = dashKategori.value;
-  renderDashboard();
+/* ==================== NAVIGASI ==================== */
+const linkNav = $$('.site-nav a');
+linkNav.forEach((link) => {
+  link.addEventListener('click', () => {
+    linkNav.forEach((item) => item.classList.toggle('is-active', item === link));
+  });
 });
 
-dashStatus.addEventListener('change', () => {
-  dashState.status = dashStatus.value;
-  renderDashboard();
-});
-
-dashRetry.addEventListener('click', muatDashboard);
-dashMuatUlang.addEventListener('click', muatDashboard);
-
-// --- Inisialisasi ---
-muatDashboard();
+/* ==================== MULAI ==================== */
+perbaruiBadgeKeranjang();
+muatKatalog();
